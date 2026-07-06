@@ -7,7 +7,7 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon node server.js"
+    "dev": "nodemon node src/server.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
