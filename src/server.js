@@ -4,8 +4,8 @@ import cors from "cors"
 import cookieParser from "cookie-parser"
 
 import connectDB from "./db/db.js"
-
-const app = express()
+import app from "./app.js"
+// const app = express()
 
 const PORT = process.env.PORT
 
