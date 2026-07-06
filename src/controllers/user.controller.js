@@ -8,43 +8,45 @@ export const signupUser = async (req, res) => {
         if (!fullName || !email || !username || !password) {
             return res.status(400).json({message: "All fields are required"})
         }
-        const exhistedUser = User.findOne({
+        const exhistedUser = await User.findOne({
             $or: [{username}, {email}]
         })
 
         if(exhistedUser) {
-            res.status(400).json({message: "User already exist!"})
+            return res.status(400).json({message: "User already exist!"})
         }
         
-        const avatarLocalPath = req.files?.avatar[0].path
-        const coverImageLocalPath = req.files?.coverImage[0].path
+        const avatarLocalPath = req.files?.avatar?.[0]?.path
+        const coverImageLocalPath = req.files?.coverImage?.[0]?.path
+
+        console.log("Avatar Local Path:", avatarLocalPath);
 
         if(!avatarLocalPath) {
-            res.status(400).json({message: "Avatar files required"})
+            return res.status(400).json({message: "Avatar files required"})
         }
 
-        const avater = await uploadOnCloudinary(avatarLocalPath)
+        const avatar = await uploadOnCloudinary(avatarLocalPath)
         const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
         if(!avatar) {
-            res.status(400).json({message: "Avatar files required"})
+            return res.status(400).json({message: "Avatar upload failed"})
         }
 
         const newUser = await User.create({
             fullName,
-            avater: avater.url,
+            avatar: avatar.url,
             coverImage: coverImage?.url || "",
             email,
             password,
             username: username.toLowerCase(),
         })
 
-        const createdUser = User.findById(newUser._id).select("-password -refreshToken")
+        const createdUser = await User.findById(newUser._id).select("-password -refreshToken")
 
         if(!createdUser) {
-            res.status(500).json({message: "Internal Server Error"})
+            return res.status(500).json({message: "Internal Server Error"})
         }
-        res.status(200).json({message: `User Registered Successfully for ${newUser.fullName}`})
+        return res.status(200).json({createdUser, message: `User Registered Successfully for ${newUser.fullName}`})
     } catch (error) {
         console.error("Error in Signup Controller: ", error)
     }
